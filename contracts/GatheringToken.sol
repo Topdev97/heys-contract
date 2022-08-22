@@ -111,6 +111,9 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     });
     doc.totalVotesCount++;
 
+    // Reward voter with award tokens
+    _mint(msg.sender, voteAward * 10**uint(decimals()));
+
     // If the vote is approve -> check if it passes approval threshold (50% of totalSupply)
     if (vote == 1) {
       doc.totalApproveVotesWeight += balanceOf(msg.sender);
@@ -122,17 +125,16 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
         _mint(doc.submitter, docAward * 10**uint(decimals()));
 
         emit DocApproved(docId);
+        return true;
       }
+      return false;
     } else if (vote == 2) {
       doc.totalRejectVotesWeight += balanceOf(msg.sender);
+      return false;
     } else if (vote == 3) {
       doc.totalAbstainVotesWeight += balanceOf(msg.sender);
+      return false;
     }
-
-    // Reward voter with award tokens
-    _mint(msg.sender, voteAward * 10**uint(decimals()));
-
-    return true;
   }
 
   function docsToVoteOn() public view returns (uint256[] memory) {
