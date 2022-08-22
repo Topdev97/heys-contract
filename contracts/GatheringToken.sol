@@ -20,7 +20,7 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
   uint public numDocs;
 
   function initialize() initializer public {
-    __ERC20_init("Blockchain Gathering Token", "gBGT");
+    __ERC20_init("Blockchain Gathering", "gBG");
     // Mint 100 tokens to msg.sender
     _mint(msg.sender, 100 * 10**uint(decimals()));
 
