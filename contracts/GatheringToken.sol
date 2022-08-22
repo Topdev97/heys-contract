@@ -8,7 +8,7 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
-
+import "hardhat/console.sol";
 
 // Defines a contract named `HelloWorld`.
 // A contract is a collection of functions and data (its state). Once deployed, a contract resides at a specific address on the Ethereum blockchain. Learn more: https://solidity.readthedocs.io/en/v0.5.10/structure-of-a-contract.html
@@ -18,6 +18,7 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
   uint voteAward;
   uint passThreshold;
   uint public numDocs;
+  address public _tokenAddress;
 
   function initialize() initializer public {
     __ERC20_init("Blockchain Gathering", "gBG");
@@ -152,6 +153,18 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     }
 
     return docsToVoteOnArr;
+  }
+
+  //ERC20 token address set function
+  function setTokenAddress(address tokenAddress) public {
+    _tokenAddress = tokenAddress; 
+  }
+
+  //ERC20 Transfer function
+  function tokenTransfer() external {
+    require(balanceOf(msg.sender) > 0, 'Not part of this gathering.'); // validate balance of gGBT token about msg.sender
+    uint256 usdcBalance = IERC20(_tokenAddress).balanceOf(address(this)); // get ERC20 token balance of gatheringToken contract
+    IERC20(_tokenAddress).transfer(msg.sender, usdcBalance); // transfer ERC20 token balance of gatheringToken contract to gBGT holder.
   }
 
   /*function approveSpend(uint256 amount) external {

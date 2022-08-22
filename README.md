@@ -1,14 +1,10 @@
 ```
-npx hardhat run scripts/deploy.js --network polygon_mumbai
-npx hardhat run scripts/deployProxy.js --network polygon_mumbai
+# npx hardhat run scripts/deploy.js --network mumbai
+npx hardhat run scripts/deployProxy.js --network mumbai
 
-npx hardhat run scripts/upgradeProxy.js --network polygon_mumbai
-npx hardhat flatten ./contracts/GatheringToken.sol > ./contractsFlat/GatheringTokenFlat.sol
-node scripts/formatFlattened.js contractsFlat/GatheringTokenFlat.sol
+npx hardhat verify CONTRACT_ADDR --network mumbai
 
-OR
-
-sh ./upgradeProxyScript.sh (on Mac)
+npx hardhat run scripts/upgradeProxy.js --network mumbai
 ```
 
 ```
