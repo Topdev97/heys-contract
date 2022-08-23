@@ -141,7 +141,6 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
 
   function docsToVoteOn() public view returns (uint256[] memory) {
     uint toCheck = 0;
-    uint docsToVoteOnCount = 0;
 
     if (docCount < voteDocsToCheckAmount) {
       toCheck = docCount;
@@ -149,18 +148,12 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
       toCheck = voteDocsToCheckAmount;
     }
 
+    uint256[] memory docsToVoteOnArr = new uint256[](toCheck);
+    uint toVoteCount = 0;
     for (uint i = 1; i <= toCheck; i++) {
       if (docs[docCount - i].approved == false) {
-        docsToVoteOnCount += 1;
-      }
-    }
-
-    uint256[] memory docsToVoteOnArr = new uint256[](docsToVoteOnCount);
-    uint voteDocIdx = 0;
-    for (uint i = 1; i <= toCheck; i++) {
-      if (docs[docCount - i].approved == false) {
-        docsToVoteOnArr[voteDocIdx] = i;
-        voteDocIdx += 1;
+        docsToVoteOnArr[toVoteCount] = i;
+        toVoteCount += 1;
       }
     }
 
