@@ -65,16 +65,16 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
   event DocApproved(uint docId);
 
   function addDoc(string memory docUid, uint8 docType) external returns (uint) {
-    bool docExists = false;
-    for (uint i; i < docCount; i++) {
-      if (keccak256(bytes(docs[i].docUid)) == keccak256(bytes(docUid)) && docs[i].docType == docType) {
-        docExists = true;
-        break;
-      }
-    }
-    require(docExists == false, "Doc exists already.");
+    // CHECKING IF DOC EXISTS ALREADY
+    // bool docExists = false;
+    // for (uint i; i < docCount; i++) {
+    //   if (keccak256(bytes(docs[i].docUid)) == keccak256(bytes(docUid)) && docs[i].docType == docType) {
+    //     docExists = true;
+    //     break;
+    //   }
+    // }
+    // require(docExists == false, "Doc exists already.");
 
-    docCount += 1;
     Doc storage doc = docs[docCount];
     doc.submitter = msg.sender;
     doc.timestamp = block.timestamp;
@@ -84,6 +84,7 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     doc.totalVotesCount = 0;
     doc.totalApproveVotesWeight = 0;
 
+    docCount += 1;
     emit DocAdded(docCount);
 
     return docCount;
@@ -152,12 +153,17 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     uint toVoteCount = 0;
     for (uint i = 1; i <= toCheck; i++) {
       if (docs[docCount - i].approved == false) {
-        docsToVoteOnArr[toVoteCount] = i;
+        docsToVoteOnArr[toVoteCount] = docCount - i;
         toVoteCount += 1;
       }
     }
 
-    return docsToVoteOnArr;
+    uint256[] memory output = new uint256[](toVoteCount);
+    for (uint i = 0; i < toVoteCount; i++) {
+      output[i] = docsToVoteOnArr[i];
+    }
+
+    return output;
   }
 
   //ERC20 token address set function

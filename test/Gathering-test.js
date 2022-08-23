@@ -38,20 +38,20 @@ describe('GatheringToken', function () {
     })
 
     it('Should allow to submit a new doc', async () => {
-      await Gathering.connect(account1).addDoc('sample-doc-uri', 1)
+      await Gathering.connect(account1).addDoc('sample-doc-uid', 1)
       const docCount = await Gathering.docCount()
       expect(docCount).to.equal(1)
-      const newDoc = await Gathering.docs(1)
-      expect(newDoc[3]).to.equal(1)
+      const newDoc = await Gathering.docs(0)
+      expect(newDoc.docUid).to.equal('sample-doc-uid')
     })
 
     it('Should return list of docs to vote on', async () => {
       await Gathering.connect(owner).initialize()
-      await Gathering.connect(account1).addDoc('sample-doc-uri-A', 1)
-      await Gathering.connect(account1).addDoc('sample-doc-uri-B', 1)
+      await Gathering.connect(account1).addDoc('sample-doc-uid-A', 1)
+      await Gathering.connect(account1).addDoc('sample-doc-uid-B', 1)
       const docsToVoteOn = await Gathering.docsToVoteOn()
       expect(docsToVoteOn[0]).to.equal('1')
-      expect(docsToVoteOn[1]).to.equal('2')
+      expect(docsToVoteOn[1]).to.equal('0')
     })
 
     it('Should process a vote on an added doc', async () => {
@@ -64,17 +64,18 @@ describe('GatheringToken', function () {
       
       expect(await Gathering.docCount()).to.equal(2)
       expect((await Gathering.docsToVoteOn())[0]).to.equal('1')
+      expect((await Gathering.docsToVoteOn())[1]).to.equal('0')
       
-      await Gathering.connect(owner).voteOnDoc(1, 1)
-      
+      await Gathering.connect(owner).voteOnDoc(0, 1)
+
       // doc should be approved now
-      expect((await Gathering.docs(1)).approved).to.equal(true)
+      expect((await Gathering.docs(0)).approved).to.equal(true)
 
       // submitter should be rewarded with tokens
       expect(await Gathering.balanceOf(account1.address)).to.equal('100000000000000000000')
 
       // docsToVoteOn now should only have one doc
-      expect((await Gathering.docsToVoteOn())[0]).to.equal('2')
+      expect((await Gathering.docsToVoteOn())[0]).to.equal('1')
     })
   })
 })
