@@ -17,7 +17,8 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
   uint docAward;
   uint voteAward;
   uint passThreshold;
-  uint public numDocs;
+  uint voteDocsToCheckAmount;
+  uint public docCount;
   address public _tokenAddress;
 
   function initialize() initializer public {
@@ -28,7 +29,8 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     docAward = 100;
     voteAward = 5;
     passThreshold = 50; // %
-    numDocs = 0;
+    docCount = 0;
+    voteDocsToCheckAmount = 20;
   }
 
   receive () external payable {
@@ -64,7 +66,7 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
 
   function addDoc(string memory docUid, uint8 docType) external returns (uint) {
     bool docExists = false;
-    for (uint i; i < numDocs; i++) {
+    for (uint i; i < docCount; i++) {
       if (keccak256(bytes(docs[i].docUid)) == keccak256(bytes(docUid)) && docs[i].docType == docType) {
         docExists = true;
         break;
@@ -72,8 +74,8 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     }
     require(docExists == false, "Doc exists already.");
 
-    numDocs += 1;
-    Doc storage doc = docs[numDocs];
+    docCount += 1;
+    Doc storage doc = docs[docCount];
     doc.submitter = msg.sender;
     doc.timestamp = block.timestamp;
     doc.docUid = docUid;
@@ -82,14 +84,14 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     doc.totalVotesCount = 0;
     doc.totalApproveVotesWeight = 0;
 
-    emit DocAdded(numDocs);
+    emit DocAdded(docCount);
 
-    return numDocs;
+    return docCount;
   }
 
-  function voteOnDoc(uint docId, uint8 vote) external returns (bool) {
+  function voteOnDoc(uint docId, uint8 vote) external returns (bool approved) {
     require(balanceOf(msg.sender) > 0, "Not part of this gathering.");
-    require(docId < numDocs, "Doc doesn't exist.");
+    require(docId < docCount, "Doc doesn't exist.");
 
     bool votedAlready = false;
     Doc storage doc = docs[docId];
@@ -138,17 +140,25 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
   }
 
   function docsToVoteOn() public view returns (uint256[] memory) {
-    uint numDocsToVoteOn = 0;
-    for (uint i; i < numDocs; i++) {
-      if (docs[i].approved == false) {
-        numDocsToVoteOn += 1;
+    uint toCheck = 0;
+    uint docsToVoteOnCount = 0;
+
+    if (docCount < voteDocsToCheckAmount) {
+      toCheck = docCount;
+    } else {
+      toCheck = voteDocsToCheckAmount;
+    }
+
+    for (uint i = 1; i <= toCheck; i++) {
+      if (docs[docCount - i].approved == false) {
+        docsToVoteOnCount += 1;
       }
     }
 
-    uint256[] memory docsToVoteOnArr = new uint256[](numDocsToVoteOn);
+    uint256[] memory docsToVoteOnArr = new uint256[](docsToVoteOnCount);
     uint voteDocIdx = 0;
-    for (uint i; i < numDocs; i++) {
-      if (docs[i].approved == false) {
+    for (uint i = 1; i <= toCheck; i++) {
+      if (docs[docCount - i].approved == false) {
         docsToVoteOnArr[voteDocIdx] = i;
         voteDocIdx += 1;
       }
