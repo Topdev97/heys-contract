@@ -65,7 +65,7 @@ describe('GatheringToken', function () {
       expect(await Gathering.docCount()).to.equal(2)
       expect((await Gathering.docsToVoteOn())[0]).to.equal('1')
       expect((await Gathering.docsToVoteOn())[1]).to.equal('0')
-      
+      await Gathering.setTokenAddress(token.address)
       await Gathering.connect(owner).voteOnDoc(0, 1)
 
       // doc should be approved now
@@ -73,6 +73,17 @@ describe('GatheringToken', function () {
 
       // submitter should be rewarded with tokens
       expect(await Gathering.balanceOf(account1.address)).to.equal('100000000000000000000')
+
+      // approve, allowance and USDC tranfer fucntion test
+      await token.connect(owner).transfer(account1.address, 5000)
+      const balance0 = await token.balanceOf(account1.address)
+      await token.connect(account1).approve(Gathering.address, 1000)
+      const allowanceValue = await token.allowance(account1.address, Gathering.address)
+      expect(allowanceValue).to.equal(1000)
+      await Gathering.setTokenAddress(token.address)
+      await Gathering.connect(owner).transferUSDC(account1.address, Gathering.address, allowanceValue); 
+      const balance1 = await token.balanceOf(account1.address)
+      expect(balance0 - allowanceValue).to.equal(balance1)
 
       // docsToVoteOn now should only have one doc
       expect((await Gathering.docsToVoteOn())[0]).to.equal('1')
