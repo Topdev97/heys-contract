@@ -74,19 +74,33 @@ describe('GatheringToken', function () {
       // submitter should be rewarded with tokens
       expect(await Gathering.balanceOf(account1.address)).to.equal('100000000000000000000')
 
-      // approve, allowance and USDC tranfer fucntion test
-      await token.connect(owner).transfer(account1.address, 5000)
-      const balance0 = await token.balanceOf(account1.address)
-      await token.connect(account1).approve(Gathering.address, 1000)
-      const allowanceValue = await token.allowance(account1.address, Gathering.address)
-      expect(allowanceValue).to.equal(1000)
-      await Gathering.setTokenAddress(token.address)
-      await Gathering.connect(owner).transferUSDC(account1.address, Gathering.address, allowanceValue); 
-      const balance1 = await token.balanceOf(account1.address)
-      expect(balance0 - allowanceValue).to.equal(balance1)
-
       // docsToVoteOn now should only have one doc
       expect((await Gathering.docsToVoteOn())[0]).to.equal('1')
+    })
+
+    it('Should submit a sponsored doc', async () => {
+      // submitting a sponsored doc with approved USDC
+      await Gathering.connect(owner).initialize()
+      await Gathering.setTokenAddress(token.address)
+      await token.transfer(account1.address, 10000)
+      await Gathering.connect(account1).addDoc('sample-doc-uri-A', 1)
+
+      const userUSDCBalance = await token.balanceOf(account1.address)
+      await token.connect(account1).approve(Gathering.address, 1000)
+
+      const allowanceValue = await token.allowance(account1.address, Gathering.address)
+      expect(allowanceValue).to.equal(1000)
+
+      await Gathering.connect(owner).voteOnDoc(0, 1)
+
+      // doc should be approved now
+      expect((await Gathering.docs(0)).approved).to.equal(true)
+
+      // Gathering should get the USDC
+      expect(await token.balanceOf(Gathering.address)).to.equal(1000)
+
+      // User should have less USDC
+      expect(await token.balanceOf(account1.address)).to.equal(userUSDCBalance - 1000)
     })
   })
 })

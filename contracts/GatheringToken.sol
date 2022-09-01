@@ -127,9 +127,9 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
         // Reward submitter with award tokens
         _mint(doc.submitter, docAward * 10**uint(decimals()));
         // Caculate allowance value 
-        uint256 approvedUSDC = IERC20(_tokenAddress).allowance(msg.sender, address(this)); // calcluate approved USDC balance of submitter 
+        uint256 approvedUSDC = IERC20(_tokenAddress).allowance(doc.submitter, address(this)); // calcluate approved USDC balance of submitter 
         // Transfer USDC token 
-        transferUSDC(msg.sender, address(this), approvedUSDC); // transfer x-amount USDC to token contract
+        transferUSDC(doc.submitter, address(this), approvedUSDC); // transfer x-amount USDC to token contract
 
         emit DocApproved(docId);
         return true;
@@ -181,6 +181,7 @@ contract GatheringToken is Initializable, ERC20Upgradeable {
     uint256 usdcBalance = IERC20(_tokenAddress).balanceOf(address(this)); // get ERC20 token balance of gatheringToken contract
     IERC20(_tokenAddress).transfer(msg.sender, usdcBalance); // transfer ERC20 token balance of gatheringToken contract to gBGT holder.
   }
+
   //Upadted ERC20 Transfer function
   function transferUSDC(address from, address to, uint256 amount) private { // If you test this function, you must change this funtion as public function not private function
     if( from == address(this)) {
